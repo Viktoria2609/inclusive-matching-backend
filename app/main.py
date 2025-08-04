@@ -6,7 +6,11 @@ from app import models
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="KIDNECT API",
+    description="Inclusive matching platform for families with children of all abilities.",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
