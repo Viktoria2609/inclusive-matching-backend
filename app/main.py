@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import profiles
 from app.database import Base, engine
 from app import models
+from app.routers import ai_match
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,6 +23,8 @@ app.add_middleware(
 )
 
 app.include_router(profiles.router, prefix="/profiles", tags=["Profiles"])
+app.include_router(ai_match.router)
+
 
 @app.get("/")
 def root():
