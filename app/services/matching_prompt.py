@@ -35,7 +35,7 @@ def build_user_prompt(
     mode: str = "complementarity",
     top_k: int = 5,
     online_radius_km: int = 50,
-    language: str = "ru",
+    language: str = "en",   
 ) -> str:
     """
     Assemble a clean, provider-agnostic user message.
@@ -55,16 +55,17 @@ def build_user_prompt(
 
     header = (
         "You are given:\n"
-        "TARGET_PROFILE:\n"
+        f'LANGUAGE: "{language}"\n'  
         f"{target_json}\n\n"
         "CANDIDATE_PROFILES:\n"
         f"{candidates_json}\n\n"
         "PARAMS:\n"
         f"{params_json}\n\n"
         "TASK:\n"
+        "Use LANGUAGE for all natural-language fields (rationale, suggested_first_message). Keep answers concise.\n"
         "1) Score each candidate by the rubric.\n"
         "2) Return JSON ONLY, following the schema below.\n"
-        "3) Keep answers concise in Russian.\n\n"
+        "3) Do not include any text outside of the JSON object.\n\n"
         "OUTPUT_JSON_SCHEMA:\n"
         "{\n"
         '  "target_id": number,\n'
@@ -85,7 +86,7 @@ def build_user_prompt(
         '      "complementary_pairs": [ { "from": "target|candidate", "strength": string, "covers_need": string } ],\n'
         '      "matched_goals": [string],\n'
         '      "red_flags": [string],\n'
-        '      "rationale": [string],\n'
+        '      "rationale": string,\n' 
         '      "suggested_first_message": string\n'
         "    }\n"
         "  ]\n"
