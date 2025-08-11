@@ -1,7 +1,6 @@
 from typing import List, Dict, Any
 import json
 
-# --- System prompt used for AI matching ---
 SYSTEM_PROMPT = """
 Role: Inclusive Matching Assistant
 Goal: Help match children/families to foster inclusion, friendship, and shared growth.
@@ -28,7 +27,6 @@ Scoring rubric (0–100 total):
 You must rank top_k best candidates by overall_score and provide short rationale and a suggested first message the parent could send.
 """
 
-# --- Builds the 'user' message for the model ---
 def build_user_prompt(
     target: Dict[str, Any],
     candidates: List[Dict[str, Any]],
@@ -37,32 +35,25 @@ def build_user_prompt(
     online_radius_km: int = 50,
     language: str = "en",   
 ) -> str:
-    """
-    Assemble a clean, provider-agnostic user message.
-    We serialize payloads as JSON (not Python repr) to reduce ambiguity.
-    """
     target_json = json.dumps(target, ensure_ascii=False)
     candidates_json = json.dumps(candidates, ensure_ascii=False)
     params_json = json.dumps(
-        {
-            "mode": mode,
-            "top_k": top_k,
-            "online_radius_km": online_radius_km,
-            "language": language,
-        },
+        {"mode": mode, "top_k": top_k, "online_radius_km": online_radius_km, "language": language},
         ensure_ascii=False,
     )
 
-    header = (
+    return (
         "You are given:\n"
-        f'LANGUAGE: "{language}"\n'  
+        f'LANGUAGE: "{language}"\n'
+        "TARGET_PROFILE:\n"
         f"{target_json}\n\n"
         "CANDIDATE_PROFILES:\n"
         f"{candidates_json}\n\n"
         "PARAMS:\n"
         f"{params_json}\n\n"
         "TASK:\n"
-        "Use LANGUAGE for all natural-language fields (rationale, suggested_first_message). Keep answers concise.\n"
+        "Use LANGUAGE for all natural-language fields (rationale, suggested_first_message). "
+        "Keep answers concise. Do not use any other language than LANGUAGE.\n"
         "1) Score each candidate by the rubric.\n"
         "2) Return JSON ONLY, following the schema below.\n"
         "3) Do not include any text outside of the JSON object.\n\n"
@@ -86,11 +77,10 @@ def build_user_prompt(
         '      "complementary_pairs": [ { "from": "target|candidate", "strength": string, "covers_need": string } ],\n'
         '      "matched_goals": [string],\n'
         '      "red_flags": [string],\n'
-        '      "rationale": string,\n' 
+        '      "rationale": string,\n'
         '      "suggested_first_message": string\n'
         "    }\n"
         "  ]\n"
         "}\n"
         "Return ONLY valid JSON. No extra text.\n"
     )
-    return header

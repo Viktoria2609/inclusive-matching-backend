@@ -29,10 +29,12 @@ def profile_to_dict(p: Profile) -> Dict[str, Any]:
 @router.post("/match")
 def ai_match(
     target_id: int = Query(..., description="Profile ID to match from"),
-    mode: str = Query("complementarity", regex="^(similarity|complementarity|goal_alignment)$"),
+    # use 'pattern' (newer FastAPI) instead of deprecated 'regex'
+    mode: str = Query("complementarity", pattern="^(similarity|complementarity|goal_alignment)$"),
     top_k: int = Query(5, ge=1, le=20),
     same_city: bool = Query(True, description="Restrict candidates to the same city"),
     max_candidates: int = Query(50, ge=1, le=200, description="Max candidates passed to the LLM"),
+    language: str = Query("en", description="Output language, e.g. 'en' or 'ru'"),
     db: Session = Depends(get_db),
 ):
     # 1) load target
@@ -62,14 +64,14 @@ def ai_match(
     target_payload = profile_to_dict(target)
     candidate_payloads = [profile_to_dict(c) for c in candidates]
 
-    # 4) build prompt
+    # 4) build prompt (EN by default, or whatever 'language' was requested)
     user_prompt = build_user_prompt(
         target=target_payload,
         candidates=candidate_payloads,
         mode=mode,
         top_k=top_k,
         online_radius_km=50,
-        language="ru",
+        language=language,     # <-- was hardcoded "ru"
     )
 
     # 5) call the model (OpenAI client)
